@@ -25,33 +25,42 @@ def parse_input(user_input): # Введення команд юзера
     return cmd, *args
 
 @input_error
-def add_contact(args, contacts): # Додавання контакту
-    name, phone = args
-    contacts[name] = phone
-    return "Contact added."
+def add_contact(args, book): # Додавання контакту
+    name, phone, *_ = args
+    record = book.find(name)
+    message = "Contact updated."
+    if record is None:
+        record = Record(name)
+        book.add_record(record)
+        message = "Contact added."
+    if phone:
+        record.add_phone(phone)
+    return message
 
 @input_error
-def change_contact(args, contacts): # Зміна данних контакту
+def change_contact(args, book):
     name, new_phone = args
-    if name in contacts:
-        contacts[name] = new_phone
-        return "Contact updated."
+    record = book.find(name)
+    if record:
+        record.add_phone(new_phone)
     else:
         return "Contact not found."
 
 @input_error
-def show_phone(args, contacts): # Показ номеру телефона за именем
+def show_phone(args, book):
     name = args[0]
-    if name in contacts:
-        return contacts[name]
+    record = book.find(name)
+    if record:
+        return record.phones
     else:
         return "Contact not found."
     
 @input_error
 def add_birthday(args, book):
     name, birthday_date = args
-    if name in book:
-        book[name].add_birthday(birthday_date)
+    record = book.find(name)
+    if record:
+        record.add_birthday(birthday_date)
         return "Birthday added."
     else:
         return "Contact not found."
@@ -59,16 +68,16 @@ def add_birthday(args, book):
 @input_error
 def show_birthday(args, book):
     name = args[0]
-    if name in book:
-        return f"{name}'s birthday is {book[name].birthday}"
+    record = book.find(name)
+    if record and record.birthday:
+        return f"{name}'s birthday is {record.birthday}"
     else:
         return "Contact not found."
 
-
 @input_error
-def birthdays(args, book):
+def birthdays(args, book): 
     upcoming_birthdays = book.get_upcoming_birthdays()
-    return "\n".join(f"{record['name']}: {record['congratulation_date']}" for record in upcoming_birthdays)
+    return f"{Record['name']}: {record['congratulation_date']}"
 
 class Field:
     def __init__(self, value):
